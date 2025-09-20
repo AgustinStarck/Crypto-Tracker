@@ -1,0 +1,750 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><defs><linearGradient id='coinGrad' x1='0%25' y1='0%25' x2='100%25' y2='100%25'><stop offset='0%25' stop-color='%23667eea'/><stop offset='100%25' stop-color='%23764ba2'/></linearGradient></defs><circle cx='50' cy='50' r='45' fill='url(%23coinGrad)' stroke='%23ffffff' stroke-width='3'/><text x='50' y='58' font-family='Arial,sans-serif' font-size='24' font-weight='bold' text-anchor='middle' fill='%23ffffff'>₿</text></svg>" type="image/svg+xml">
+  <title>Crypto Tracker</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    :root {
+      --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      --secondary-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+      --card-gradient: linear-gradient(145deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%);
+      --background-dark: #0a0e1a;
+      --background-card: rgba(255,255,255,0.08);
+      --text-primary: #ffffff;
+      --text-secondary: #a0aec0;
+      --success-color: #48bb78;
+      --warning-color: #ed8936;
+      --danger-color: #f56565;
+      --btc-color: #f7931a;
+      --eth-color: #627eea;
+      --accent-blue: #4299e1;
+      --accent-purple: #9f7aea;
+      --border-radius: 20px;
+      --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      --glass-border: rgba(255,255,255,0.2);
+      --glass-shadow: 0 8px 32px rgba(0,0,0,0.37);
+    }
+    * { 
+      margin: 0; 
+      padding: 0; 
+      box-sizing: border-box; 
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif; 
+    }
+    
+    body { 
+      background: var(--background-dark);
+      background-image: 
+        radial-gradient(circle at 25% 25%, #667eea15 0%, transparent 50%),
+        radial-gradient(circle at 75% 75%, #764ba215 0%, transparent 50%),
+        linear-gradient(135deg, #0a0e1a 0%, #1a202c 100%);
+      color: var(--text-primary); 
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+    
+    /* Pestaña flotante de GitHub */
+    .github-corner {
+      position: fixed;
+      top: 0;
+      right: 0;
+      z-index: 1000;
+      background: var(--card-gradient);
+      backdrop-filter: blur(20px);
+      border: 1px solid var(--glass-border);
+      border-top: none;
+      border-right: none;
+      border-radius: 0 0 0 var(--border-radius);
+      padding: 12px 16px;
+      box-shadow: var(--glass-shadow);
+      transition: var(--transition);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .github-corner:hover {
+      background: rgba(102, 126, 234, 0.15);
+      transform: translateY(2px);
+    }
+    
+    .github-corner a {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      text-decoration: none;
+      color: var(--text-primary);
+      font-weight: 500;
+    }
+    
+    .github-icon {
+      width: 20px;
+      height: 20px;
+      fill: var(--text-primary);
+    }
+    
+    .star-icon {
+      width: 16px;
+      height: 16px;
+      fill: #FFD700;
+    }
+    
+    .github-text {
+      font-size: 0.9rem;
+    }
+    
+    .container { 
+      max-width: 1400px; 
+      margin: 0 auto; 
+      padding: 24px;
+    }
+    header { 
+      background: var(--card-gradient);
+      backdrop-filter: blur(20px);
+      border: 1px solid var(--glass-border);
+      padding: 48px 32px; 
+      text-align: center; 
+      border-radius: var(--border-radius); 
+      margin-bottom: 32px; 
+      position: relative; 
+      overflow: hidden;
+      box-shadow: var(--glass-shadow);
+    }
+    header::before { 
+      content: ''; 
+      position: absolute; 
+      top: 0; 
+      left: 0; 
+      right: 0;
+      bottom: 0;
+      background: var(--primary-gradient);
+      opacity: 0.1;
+      z-index: -1;
+    }
+    header::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+      animation: shine 3s infinite;
+      z-index: 1;
+    }
+    
+    @keyframes shine {
+      0% { left: -100%; }
+      100% { left: 100%; }
+    }
+    h1 { 
+      font-size: 3.5rem; 
+      margin-bottom: 0; 
+      font-weight: 700; 
+      background: linear-gradient(135deg, #ffffff 0%, #667eea 50%, #764ba2 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      position: relative;
+      z-index: 2;
+    }
+    header p { 
+      font-size: 1.25rem; 
+      opacity: 0.8;
+      font-weight: 400;
+      letter-spacing: 0.5px;
+      position: relative;
+      z-index: 2;
+    }
+    .controls { 
+      background: var(--card-gradient);
+      backdrop-filter: blur(20px);
+      border: 1px solid var(--glass-border);
+      padding: 32px; 
+      border-radius: var(--border-radius); 
+      margin-bottom: 32px; 
+      display: flex; 
+      flex-wrap: wrap; 
+      gap: 24px; 
+      align-items: center;
+      box-shadow: var(--glass-shadow);
+    }
+    .control-group { display: flex; align-items: center; gap: 10px; }
+    label { 
+      font-weight: 500; 
+      color: var(--text-secondary); 
+      font-size: 0.95rem;
+      letter-spacing: 0.5px;
+    }
+    select, input { 
+      padding: 16px 20px; 
+      background: rgba(255,255,255,0.05);
+      backdrop-filter: blur(10px);
+      border: 1px solid var(--glass-border); 
+      border-radius: 12px; 
+      color: var(--text-primary); 
+      transition: var(--transition);
+      font-size: 0.95rem;
+      font-weight: 400;
+    }
+    
+    /* Estilos para el placeholder más blanco */
+    #alertEmail::placeholder {
+      color: rgba(255, 255, 255, 0.8);
+      opacity: 1; /* Para navegadores Firefox */
+    }
+
+    #alertEmail:-ms-input-placeholder {
+      color: rgba(255, 255, 255, 0.8);
+    }
+
+    #alertEmail::-ms-input-placeholder {
+      color: rgba(255, 255, 255, 0.8);
+    }
+    
+    select {
+      appearance: none;
+      background-image: url("data:image/svg+xml;charset=US-ASCII,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 5'><path fill='%23ffffff' d='M2 0L0 2h4zm0 5L0 3h4z'/></svg>");
+      background-repeat: no-repeat;
+      background-position: right 16px center;
+      background-size: 12px;
+      cursor: pointer;
+    }
+    
+    select option {
+      background: #1a202c;
+      color: var(--text-primary);
+      padding: 12px;
+    }
+    
+    select:focus, input:focus { 
+      outline: none; 
+      border-color: var(--accent-blue); 
+      box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.15);
+      transform: translateY(-2px);
+    }
+    button { 
+      padding: 16px 32px; 
+      background: var(--primary-gradient); 
+      color: white; 
+      border: none; 
+      border-radius: 12px; 
+      cursor: pointer; 
+      font-weight: 500; 
+      transition: var(--transition);
+      font-size: 0.95rem;
+      letter-spacing: 0.5px;
+      position: relative;
+      overflow: hidden;
+    }
+    button::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+      transition: left 0.5s;
+    }
+    button:hover::before {
+      left: 100%;
+    }
+    button:hover { 
+      transform: translateY(-3px); 
+      box-shadow: 0 10px 25px rgba(102, 126, 234, 0.25);
+    }
+    button:active {
+      transform: translateY(-1px);
+    }
+    .status { 
+      padding: 16px 24px; 
+      border-radius: 12px; 
+      margin: 24px 0; 
+      text-align: center; 
+      font-weight: 500; 
+      background: var(--card-gradient);
+      backdrop-filter: blur(20px);
+      border: 1px solid var(--glass-border);
+      box-shadow: var(--glass-shadow);
+    }
+    .status.success { 
+      background: rgba(72,187,120,0.1);
+      color: var(--success-color); 
+      border-color: rgba(72,187,120,0.3);
+      box-shadow: 0 8px 32px rgba(72,187,120,0.15);
+    }
+    .status.error { 
+      background: rgba(245,101,101,0.1);
+      color: var(--danger-color); 
+      border-color: rgba(245,101,101,0.3);
+      box-shadow: 0 8px 32px rgba(245,101,101,0.15);
+    }
+    .tabs { 
+      display: flex; 
+      background: var(--card-gradient);
+      backdrop-filter: blur(20px);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--border-radius) var(--border-radius) 0 0; 
+      overflow: hidden; 
+      border-bottom: none;
+      box-shadow: var(--glass-shadow);
+    }
+    .tab-btn { 
+      flex: 1; 
+      padding: 20px 24px; 
+      background: transparent; 
+      border: none; 
+      cursor: pointer; 
+      font-weight: 500; 
+      color: var(--text-secondary); 
+      transition: var(--transition); 
+      position: relative;
+      font-size: 0.95rem;
+      letter-spacing: 0.5px;
+    }
+    .tab-btn:hover {
+      background: rgba(255,255,255,0.05);
+      color: var(--text-primary);
+    }
+    .tab-btn.active { 
+      color: var(--text-primary); 
+      background: rgba(102, 126, 234, 0.1);
+    }
+    .tab-btn.active::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: var(--primary-gradient);
+    }
+    .tab-content { 
+      display: none; 
+      background: var(--card-gradient);
+      backdrop-filter: blur(20px);
+      border: 1px solid var(--glass-border);
+      padding: 32px; 
+      border-radius: 0 0 var(--border-radius) var(--border-radius); 
+      margin-bottom: 32px;
+      border-top: none;
+      box-shadow: var(--glass-shadow);
+    }
+    .tab-content.active { 
+      display: block; 
+      animation: fadeIn 0.4s cubic-bezier(0.4, 0, 0.2, 1); 
+    }
+    @keyframes fadeIn { 
+      from { 
+        opacity: 0; 
+        transform: translateY(20px); 
+      } 
+      to { 
+        opacity: 1; 
+        transform: translateY(0); 
+      } 
+    }
+    #prices-container, #stats-container { 
+      display: grid; 
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); 
+      gap: 24px; 
+    }
+    .price-card, .stat-card, .alert-item { 
+      background: var(--card-gradient);
+      backdrop-filter: blur(20px);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--border-radius); 
+      padding: 28px; 
+      box-shadow: var(--glass-shadow);
+      transition: var(--transition);
+      position: relative;
+      overflow: hidden;
+    }
+    .price-card::before, .stat-card::before, .alert-item::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 1px;
+      background: var(--primary-gradient);
+    }
+    .price-card:hover, .stat-card:hover, .alert-item:hover { 
+      transform: translateY(-8px); 
+      box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+      border-color: rgba(102, 126, 234, 0.4);
+    }
+    .price-card h3 { 
+      color: var(--text-secondary); 
+      margin-bottom: 16px; 
+      font-size: 0.9rem;
+      font-weight: 500;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+    }
+    .price-value { 
+      font-size: 2rem; 
+      font-weight: 700; 
+      margin-bottom: 20px;
+      background: var(--primary-gradient);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .chart-container { 
+      position: relative; 
+      height: 500px; 
+      margin-bottom: 32px; 
+      background: var(--card-gradient);
+      backdrop-filter: blur(20px);
+      border: 1px solid var(--glass-border);
+      padding: 32px; 
+      border-radius: var(--border-radius);
+      box-shadow: var(--glass-shadow);
+    }
+    .alert-form { 
+      background: var(--card-gradient);
+      backdrop-filter: blur(20px);
+      border: 1px solid var(--glass-border);
+      padding: 32px; 
+      border-radius: var(--border-radius); 
+      margin-bottom: 32px;
+      box-shadow: var(--glass-shadow);
+    },0.4);
+    }
+    .alert-form { 
+      background: var(--card-gradient); 
+      padding: 30px; 
+      border-radius: var(--border-radius); 
+      margin-bottom: 25px;
+      border: 1px solid rgba(255, 140, 66, 0.3);
+      backdrop-filter: blur(10px);
+      box-shadow: 0 12px 24px rgba(0,0,0,0.4);
+    }
+    .form-group { margin-bottom: 20px; }
+    .alert-field { display: none; }
+    footer { text-align: center; margin-top: 50px; padding: 25px; color: var(--text-secondary); font-size: 0.9rem; opacity: 0.7; }
+    @media (max-width: 768px) { .controls, .tabs { flex-direction: column; } #prices-container, #stats-container { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+  <!-- Pestaña flotante de GitHub -->
+  <div class="github-corner">
+    <a href="https://github.com/AgustinStarck/Crypto-Tracker" target="_blank" rel="noopener noreferrer">
+      <svg class="github-icon" viewBox="0 0 16 16" fill="currentColor">
+        <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/>
+      </svg>
+      <span class="github-text">Repositorio</span>
+      <svg class="star-icon" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/>
+      </svg>
+    </a>
+  </div>
+
+  <div class="container">
+    <header>
+      <div style="display: flex; align-items: center; justify-content: center; gap: 16px; margin-bottom: 16px;">
+        <svg width="60" height="60" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="coinGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#667eea"/>
+              <stop offset="50%" stop-color="#764ba2"/>
+              <stop offset="100%" stop-color="#9f7aea"/>
+            </linearGradient>
+            <filter id="glow">
+              <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+              <feMerge> 
+                <feMergeNode in="coloredBlur"/>
+                <feMergeNode in="SourceGraphic"/>
+              </feMerge>
+            </filter>
+          </defs>
+          <circle cx="50" cy="50" r="45" fill="url(#coinGradient)" stroke="#ffffff" stroke-width="2" filter="url(#glow)" style="drop-shadow: 0 0 10px rgba(102, 126, 234, 0.5);"/>
+          <text x="50" y="58" font-family="Inter, sans-serif" font-size="20" font-weight="bold" text-anchor="middle" fill="#ffffff">₿</text>
+          <circle cx="50" cy="50" r="35" fill="none" stroke="rgba(255,255,255,0.3)" stroke-width="1"/>
+        </svg>
+        <h1>Crypto Tracker</h1>
+      </div>
+      <p>Monitorea precios en tiempo real y obten alertas</p>
+    </header>
+
+    <div class="controls">
+      <div class="control-group">
+        <label for="cryptoSelect">Seleccionar Cripto:</label>
+        <select id="cryptoSelect">
+          <option value="BTC">Bitcoin (BTC)</option>
+          <option value="ETH">Ethereum (ETH)</option>
+        </select>
+      </div>
+      <button onclick="fetchPrices()">Actualizar Precios</button>
+      <button onclick="fetchChartData()">Actualizar Grafico</button>
+    </div>
+
+    <div id="status" class="status"></div>
+
+    <div class="tabs">
+      <button class="tab-btn active" onclick="showTab('prices')">Precios</button>
+      <button class="tab-btn" onclick="showTab('chart')">Grafico</button>
+      <button class="tab-btn" onclick="showTab('alerts')">Alertas</button>
+      <button class="tab-btn" onclick="showTab('stats')">Estadi­sticas</button>
+    </div>
+
+    <div id="prices-tab" class="tab-content active">
+      <h2>ultimos Precios</h2>
+      <div id="prices-container"></div>
+    </div>
+
+    <div id="chart-tab" class="tab-content">
+      <h2>Grafico de Precios</h2>
+      <div class="chart-container">
+        <canvas id="priceChart"></canvas>
+      </div>
+    </div>
+
+    <div id="alerts-tab" class="tab-content">
+      <h2>Gestion de Alertas</h2>
+      <div class="alert-form">
+        <h3>Crear Nueva Alerta</h3>
+        <div class="form-group">
+          <label for="alertEmail">Email:</label>
+          <input type="email" id="alertEmail" placeholder="tu@email.com" required>
+        </div>
+        <div class="form-group">
+          <label for="alertCrypto">Criptomoneda:</label>
+          <select id="alertCrypto">
+            <option value="BTC">Bitcoin</option>
+            <option value="ETH">Ethereum</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="alertType">Tipo de Alerta:</label>
+          <select id="alertType" onchange="toggleAlertFields()">
+            <option value="change">Cambio Porcentual</option>
+            <option value="above">Precio Por Encima De</option>
+            <option value="below">Precio Por Debajo De</option>
+          </select>
+        </div>
+        <div id="percentageField" class="form-group alert-field">
+          <label for="percentageChange">Cambio Porcentual (%):</label>
+          <input type="number" id="percentageChange" step="0.1" value="2.0" min="0.1">
+        </div>
+        <div id="priceField" class="form-group alert-field" style="display:none;">
+          <label for="targetPrice">Precio Objetivo (USD):</label>
+          <input type="number" id="targetPrice" step="0.01" min="0">
+        </div>
+        <button onclick="createAlert()">Crear Alerta</button>
+      </div>
+    </div>
+
+    <div id="stats-tab" class="tab-content">
+      <h2>Estadi­sticas del Mercado</h2>
+      <div id="stats-container"></div>
+    </div>
+
+    <footer>
+      <p>Crypto Tracker &copy; 2025 | Datos proporcionados por Kraken</p>
+      <p><a href="https://www.linkedin.com/in/agustin-starck" target="_blank" rel="noopener noreferrer">Seguime en LinkedIn</a></p>
+    </footer>
+  </div>
+
+  <script>
+    const API_BASE = 'https://api-precios-crypto.onrender.com/api';
+    let priceChart = null;
+
+    document.addEventListener('DOMContentLoaded', () => {
+      fetchPrices();
+      fetchStats();
+      loadAlerts();
+      toggleAlertFields();
+    });
+
+    function showTab(tabName) {
+      document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      document.getElementById(`${tabName}-tab`).classList.add('active');
+      document.querySelector(`.tab-btn:nth-child(${['prices','chart','alerts','stats'].indexOf(tabName)+1})`).classList.add('active');
+      if (tabName === 'chart') fetchChartData();
+    }
+
+    function toggleAlertFields() {
+      const type = document.getElementById('alertType').value;
+      document.getElementById('percentageField').style.display = type === 'change' ? 'block' : 'none';
+      document.getElementById('priceField').style.display = type === 'change' ? 'none' : 'block';
+    }
+
+    async function fetchPrices() {
+      showStatus('Cargando precios...');
+      const crypto = document.getElementById('cryptoSelect').value;
+      const endpoint = crypto === 'BTC' ? 'btc-prices/latest_prices' : 'eth-prices/latest_prices';
+      try {
+        const res = await fetch(`${API_BASE}/${endpoint}/`);
+        const data = await res.json();
+        displayPrices(data, crypto);
+        showStatus('Precios cargados', 'success');
+      } catch (e) {
+        showStatus('Error cargando precios', 'error');
+        console.error(e);
+      }
+    }
+
+    function displayPrices(prices, crypto) {
+      const container = document.getElementById('prices-container');
+      container.innerHTML = '';
+      prices.forEach(p => {
+        const card = document.createElement('div');
+        card.className = `price-card ${crypto}`;
+        card.innerHTML = `
+          <h3>${new Date(p.open_time).toLocaleString()}</h3>
+          <div class="price-value">$${parseFloat(p.close).toLocaleString()}</div>
+          <div>Open: $${parseFloat(p.open).toLocaleString()}</div>
+          <div>High: $${parseFloat(p.high).toLocaleString()}</div>
+          <div>Low: $${parseFloat(p.low).toLocaleString()}</div>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    async function fetchChartData() {
+      showStatus('Cargando grafico...');
+      const crypto = document.getElementById('cryptoSelect').value;
+      // Usamos un intervalo fijo de 1 hora
+      const interval = '1h';
+      const endpoint = crypto === 'BTC' ? 'btc-prices' : 'eth-prices';
+      try {
+        const res = await fetch(`${API_BASE}/${endpoint}/chart_data/?interval=${interval}&limit=50`);
+        const data = await res.json();
+        createChart(data, crypto);
+        showStatus('Grafico actualizado', 'success');
+      } catch (e) {
+        showStatus('Error cargando grafico', 'error');
+        console.error(e);
+      }
+    }
+
+    function createChart(data, crypto) {
+      const ctx = document.getElementById('priceChart').getContext('2d');
+      if (priceChart) priceChart.destroy();
+      const reversed = [...data].reverse();
+      priceChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: reversed.map(i => new Date(i.open_time).toLocaleTimeString()),
+          datasets: [{
+            label: crypto.toUpperCase() + ' Price',
+            data: reversed.map(i => parseFloat(i.close)),
+            borderColor: crypto === 'BTC' ? '#f7931a' : '#627eea',
+            backgroundColor: 'rgba(247,147,26,0.1)',
+            borderWidth: 2,
+            fill: true,
+            tension: 0.1
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { title: { display: true, text: `Precio de ${crypto.toUpperCase()} (Intervalo: 1 hora)`, color: '#fff' }, legend: { labels: { color: '#fff' } } },
+          scales: {
+            y: { beginAtZero: false, ticks: { color: '#D8C3FF', callback: v => '$' + v.toLocaleString() }, grid: { color: 'rgba(138,43,226,0.1)' } },
+            x: { ticks: { color: '#D8C3FF' }, grid: { color: 'rgba(138,43,226,0.1)' } }
+          }
+        }
+      });
+    }
+
+    async function fetchStats() {
+      const crypto = document.getElementById('cryptoSelect').value;
+      const endpoint = crypto === 'BTC' ? 'btc-prices' : 'eth-prices';
+      try {
+        const res = await fetch(`${API_BASE}/${endpoint}/stats/`);
+        const stats = await res.json();
+        displayStats(stats, crypto);
+      } catch (e) { console.error(e); }
+    }
+
+    function displayStats(stats, crypto) {
+      const container = document.getElementById('stats-container');
+      container.innerHTML = '';
+      const statsData = [
+        { label: 'Precio Actual', value: `$${parseFloat(stats.current_price).toLocaleString()}`, color: '#3498db' },
+        { label: 'Maximo 24h', value: `$${parseFloat(stats['24h_high']).toLocaleString()}`, color: '#27ae60' },
+        { label: 'Mi­nimo 24h', value: `$${parseFloat(stats['24h_low']).toLocaleString()}`, color: '#e74c3c' },
+        { label: 'Cambio 24h', value: `${parseFloat(stats['24h_change']).toFixed(2)}%`, color: stats['24h_change'] >= 0 ? '#27ae60' : '#e74c3c' },
+        { label: 'Volumen 24h', value: stats['24h_volume'].toLocaleString(), color: '#9b59b6' }
+      ];
+      statsData.forEach(s => {
+        const card = document.createElement('div');
+        card.className = 'stat-card';
+        card.style.borderLeftColor = s.color;
+        card.innerHTML = `<div class="stat-value">${s.value}</div><div class="stat-label">${s.label}</div>`;
+        container.appendChild(card);
+      });
+    }
+
+    async function createAlert() {
+      const email = document.getElementById('alertEmail').value.trim();
+      const crypto = document.getElementById('alertCrypto').value;
+      const alertType = document.getElementById('alertType').value;
+      if (!email.includes('@')) return showStatus('Email invalido', 'error');
+      const payload = { email, crypto: crypto.toUpperCase(), alert_type: alertType };
+      if (alertType === 'change') {
+        const pct = parseFloat(document.getElementById('percentageChange').value);
+        if (!pct || pct <= 0) return showStatus('Porcentaje invalido', 'error');
+        payload.percentage_change = pct;
+      } else {
+        const price = parseFloat(document.getElementById('targetPrice').value);
+        if (!price || price <= 0) return showStatus('Precio invalido', 'error');
+        payload.target_price = price;
+      }
+      try {
+        const res = await fetch(`${API_BASE}/alerts/`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+        if (res.ok) {
+          showStatus('Alerta creada', 'success');
+          document.getElementById('alertEmail').value = '';
+          document.getElementById('targetPrice').value = '';
+          loadAlerts();
+        } else {
+          const err = await res.json();
+          showStatus(err[Object.keys(err)[0]] || 'Error creando alerta', 'error');
+        }
+      } catch (e) {
+        showStatus('Error de red', 'error');
+        console.error(e);
+      }
+    }
+
+    async function loadAlerts() {
+      try {
+        const res = await fetch(`${API_BASE}/alerts/`);
+        const alerts = await res.json();
+        const container = document.getElementById('alerts-container');
+        container.innerHTML = '';
+        alerts.forEach(a => {
+          const div = document.createElement('div');
+          div.className = 'alert-item';
+          div.innerHTML = `
+            <strong>${a.crypto}</strong> â€" ${a.alert_type} â€" ${a.email}
+          `;
+          container.appendChild(div);
+        });
+      } catch (e) { console.error(e); }
+    }
+
+
+    function showStatus(msg, type = '') {
+      const s = document.getElementById('status');
+      s.textContent = msg;
+      s.className = 'status' + (type ? ' ' + type : '');
+      setTimeout(() => { s.textContent = ''; s.className = 'status'; }, 3000);
+    }
+
+    document.getElementById('cryptoSelect').addEventListener('change', () => {
+      fetchPrices();
+      fetchStats();
+      if (document.getElementById('chart-tab').classList.contains('active')) fetchChartData();
+    });
+  </script>
+</body>
+</html>
