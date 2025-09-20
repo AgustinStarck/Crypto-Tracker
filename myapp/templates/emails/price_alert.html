@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Alerta de {{alert.crypto}}</title>
+</head>
+<body>
+    <h2>🚨 Alerta de {{alert.crypto}} Activada</h2>
+    
+    <p>Hola!!,</p>
+    
+    <p>Tu alerta de {{alert.crypto}} ha sido activada.</p>
+    
+    <h3>📊 Detalles de la alerta:</h3>
+    <ul>
+        <li><strong>Tipo:</strong> {{ alert.get_alert_type_display }}</li>
+        {% if alert.alert_type == 'change' %}
+        <li><strong>Cambio:</strong> {{ alert.percentage_change }}%</li>
+        {% else %}
+        <li><strong>Precio objetivo:</strong> {{ alert.target_price }} USDT</li>
+        {% endif %}
+    </ul>
+    
+    <h3>💹 Situación actual:</h3>
+    <ul>
+        <li><strong>Precio actual:</strong> {{alert.crypto}} {{ current_price|floatformat:2 }} USDT</li>
+        <li><strong>Cambio:</strong> 
+            <span style="color: {% if price_change >= 0 %}green{% else %}red{% endif %};">
+                {{ price_change|floatformat:2 }}%
+            </span>
+        </li>
+    </ul>
+    
+    <hr>
+    <p><em>Saludos,<br>AlertWriter</em></p>
+</body>
+</html>

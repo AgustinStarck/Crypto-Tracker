@@ -1,0 +1,18 @@
+Hola!!,
+
+Tu alerta de {{alert.crypto}} ha sido activada.
+
+📊 Detalles de la alerta:
+- Tipo: {{ alert.get_alert_type_display }}
+{% if alert.alert_type == 'change' %}
+- Cambio: {{ alert.percentage_change }}%
+{% else %}
+- Precio objetivo: {{ alert.target_price }} USDT
+{% endif %}
+
+💹 Situación actual:
+- Precio actual: {{ current_price|floatformat:2 }} USDT
+- Cambio: {{ price_change|floatformat:2 }}%
+
+Saludos,
+AlertWriter
